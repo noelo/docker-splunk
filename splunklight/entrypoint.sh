@@ -58,26 +58,26 @@ EOF
     exit 1
   fi
 
-  ${SPLUNK_USER} ${SPLUNK_HOME}/bin/splunk start ${SPLUNK_START_ARGS}
-  trap "${SPLUNK_USER} ${SPLUNK_HOME}/bin/splunk stop" SIGINT SIGTERM EXIT
+  ${SPLUNK_HOME}/bin/splunk start ${SPLUNK_START_ARGS}
+  trap "${SPLUNK_HOME}/bin/splunk stop" SIGINT SIGTERM EXIT
 
   # If this is first time we start this splunk instance
   if [[ $__configured == "false" ]]; then
     # Setup listening
     # http://docs.splunk.com/Documentation/Splunk/latest/Forwarding/Enableareceiver
     if [[ -n ${SPLUNK_ENABLE_LISTEN} ]]; then
-      ${SPLUNK_USER} sh -c "${SPLUNK_HOME}/bin/splunk enable listen ${SPLUNK_ENABLE_LISTEN} -auth admin:changeme ${SPLUNK_ENABLE_LISTEN_ARGS}"
+      sh -c "${SPLUNK_HOME}/bin/splunk enable listen ${SPLUNK_ENABLE_LISTEN} -auth admin:changeme ${SPLUNK_ENABLE_LISTEN_ARGS}"
     fi
 
     # Setup monitoring
     # http://docs.splunk.com/Documentation/Splunk/latest/Data/MonitorfilesanddirectoriesusingtheCLI
     # http://docs.splunk.com/Documentation/Splunk/latest/Data/Monitornetworkports
     if [[ -n ${SPLUNK_ADD} ]]; then
-        ${SPLUNK_USER} sh -c "${SPLUNK_HOME}/bin/splunk add ${SPLUNK_ADD} -auth admin:changeme"
+        sh -c "${SPLUNK_HOME}/bin/splunk add ${SPLUNK_ADD} -auth admin:changeme"
     fi
     for n in {1..30}; do
       if [[ -n $(eval echo \$\{SPLUNK_ADD_${n}\}) ]]; then
-        ${SPLUNK_USER} sh -c "${SPLUNK_HOME}/bin/splunk add $(eval echo \$\{SPLUNK_ADD_${n}\}) -auth admin:changeme"
+        sh -c "${SPLUNK_HOME}/bin/splunk add $(eval echo \$\{SPLUNK_ADD_${n}\}) -auth admin:changeme"
       else
         # We do not want to iterate all, if one in the sequence is not set
         break
@@ -86,11 +86,11 @@ EOF
 
     # Execute anything
     if [[ -n ${SPLUNK_CMD} ]]; then
-        ${SPLUNK_USER} sh -c "${SPLUNK_HOME}/bin/splunk ${SPLUNK_CMD}"
+        sh -c "${SPLUNK_HOME}/bin/splunk ${SPLUNK_CMD}"
     fi
     for n in {1..30}; do
       if [[ -n $(eval echo \$\{SPLUNK_CMD_${n}\}) ]]; then
-        ${SPLUNK_USER} sh -c "${SPLUNK_HOME}/bin/splunk $(eval echo \$\{SPLUNK_CMD_${n}\})"
+        sh -c "${SPLUNK_HOME}/bin/splunk $(eval echo \$\{SPLUNK_CMD_${n}\})"
       else
         # We do not want to iterate all, if one in the sequence is not set
         break
@@ -98,7 +98,7 @@ EOF
     done
   fi
 
-  ${SPLUNK_USER} tail -n 0 -f ${SPLUNK_HOME}/var/log/splunk/splunkd_stderr.log &
+  tail -n 0 -f ${SPLUNK_HOME}/var/log/splunk/splunkd_stderr.log &
   wait
 else
   "$@"
